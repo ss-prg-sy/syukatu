@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>選考路線図 — 就活の選考管理</title>
+<meta name="description" content="インターンと本選考のエントリーを企業ごとにまとめて記録し、参加社数と締切を一目で確認できる就活管理ツール。">
+<meta name="theme-color" content="#12203A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand">
+      <h1>選考路線図</h1>
+      <span class="sub">SHUKATSU TRACKER</span>
+    </div>
+    <div class="tally" id="tally"></div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="search">
+      <span aria-hidden="true" class="search-icon">🔍</span>
+      <input id="q" type="text" placeholder="企業名・職種で探す" aria-label="検索">
+    </div>
+    <div class="segbar" id="segKind" role="group" aria-label="種別で絞り込む">
+      <button type="button" data-v="all" aria-pressed="true">すべて</button>
+      <button type="button" data-v="intern" aria-pressed="false">インターン</button>
+      <button type="button" data-v="honsen" aria-pressed="false">本選考</button>
+    </div>
+    <div class="segbar" id="segState" role="group" aria-label="状況で絞り込む">
+      <button type="button" data-v="active" aria-pressed="true">進行中</button>
+      <button type="button" data-v="ended" aria-pressed="false">終了</button>
+      <button type="button" data-v="all" aria-pressed="false">全部</button>
+    </div>
+    <button type="button" class="sync-chip off" id="syncStatus">同期オフ</button>
+    <button type="button" class="btn only-wide" id="addWide">＋ エントリーを追加</button>
+  </div>
+</div>
+
+<main>
+  <section id="dlSec" hidden>
+    <div class="sec-head">
+      <h2>直近の締切</h2><span class="rule"></span><span class="count" id="dlCount"></span>
+    </div>
+    <div class="deadlines" id="deadlines"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>企業一覧</h2><span class="rule"></span><span class="count" id="coCount"></span>
+    </div>
+    <div class="companies" id="companies"></div>
+  </section>
+
+  <div class="footer-actions">
+    <button type="button" class="btn subtle sm" id="btnSyncSettings">端末間の同期を設定</button>
+    <button type="button" class="btn subtle sm" id="btnBackup">データを書き出す / 読み込む</button>
+    <span class="storage-note" id="storageNote"></span>
+  </div>
+</main>
+
+<button type="button" class="btn fab" id="addFab">＋ 追加</button>
+
+<div class="scrim" id="scrim"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/model.js"></script>
+<script src="js/view.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

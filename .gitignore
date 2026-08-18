@@ -1,0 +1,15 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# エディタ
+.vscode/
+.idea/
+*.swp
+
+# 依存関係・ビルド成果物（現状は未使用）
+node_modules/
+dist/
+
+# 個人のデータ控え
+backup*.json
