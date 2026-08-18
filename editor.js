@@ -33,7 +33,29 @@
     if (isNew && co && !co.value) co.focus();
   }
 
-  /* ---------- フォーム描画 ---------- */
+  /* ---------- 表示用のやさしい言い回し ---------- */
+  var RESULT_LABEL = {
+    intern: { '進行中': '応募・選考中', '参加確定': '参加が決まった', '参加済み': '参加した', '不通過': '落ちた', '辞退': '辞退した' },
+    honsen: { '進行中': '選考中', '内定': '内定', '不通過': '落ちた', '辞退': '辞退した' }
+  };
+
+  /* 区分＝種別と時期をひとまとめにした選択肢 */
+  var SEGMENTS = [
+    { value: 'intern:夏', label: '夏インターン' },
+    { value: 'intern:秋冬', label: '秋冬インターン' },
+    { value: 'intern:春', label: '春インターン' },
+    { value: 'intern:その他', label: 'その他インターン' },
+    { value: 'honsen:', label: '本選考' }
+  ];
+
+  function currentSegment(d) {
+    return d.kind === 'honsen' ? 'honsen:' : 'intern:' + (d.season || 'その他');
+  }
+
+  /* ---------- フォーム描画 ----------
+     上段は「企業名・区分・状況」の3つだけ。
+     これだけで画面上部の集計はすべて成立する。
+     細かい項目は「詳しく入力」を開いたときにだけ出す。 */
   function paintSheet() {
     var d = draft;
     var names = [];
@@ -41,9 +63,12 @@
       if (names.indexOf(e.company) < 0) names.push(e.company);
     });
 
+    var esIndex = d.steps.indexOf('ES提出');
+    var hasDetail = !!(d.role || d.label || d.task || d.due || d.url || d.memo || d.pri !== 2);
+
     $('#sheet').innerHTML =
       '<div class="sheet-head">' +
-        '<h2>' + (isNew ? 'エントリーを追加' : 'エントリーを編集') + '</h2>' +
+        '<h2>' + (isNew ? '追加' : '編集') + '</h2>' +
         '<button type="button" class="btn subtle sm" data-close="1">閉じる</button>' +
       '</div>' +
       '<div class="sheet-body">' +
@@ -52,66 +77,72 @@
           '<input id="f-company" type="text" list="company-list" value="' + esc(d.company) + '" placeholder="例）〇〇商事">' +
           '<datalist id="company-list">' +
             names.map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') +
-          '</datalist>' +
-          '<div class="hint">同じ企業名にすると、一覧では1つのカードにまとまります。</div></div>' +
+          '</datalist></div>' +
 
-        '<div class="field"><label>種別</label><div class="radios">' +
-          '<label><input type="radio" name="kind" value="intern"' + (d.kind === 'intern' ? ' checked' : '') + '>インターン</label>' +
-          '<label><input type="radio" name="kind" value="honsen"' + (d.kind === 'honsen' ? ' checked' : '') + '>本選考</label>' +
-        '</div></div>' +
-
-        '<div class="field" id="f-season-wrap"' + (d.kind === 'honsen' ? ' hidden' : '') + '>' +
-          '<label>時期</label><div class="radios">' +
-          M.SEASONS.map(function (s) {
-            return '<label><input type="radio" name="season" value="' + s + '"' +
-              (d.season === s ? ' checked' : '') + '>' + s + '</label>';
+        '<div class="field"><label>区分</label><div class="radios">' +
+          SEGMENTS.map(function (s) {
+            return '<label><input type="radio" name="segment" value="' + s.value + '"' +
+              (currentSegment(d) === s.value ? ' checked' : '') + '>' + s.label + '</label>';
           }).join('') + '</div></div>' +
 
-        '<div class="grid2">' +
-          '<div class="field"><label for="f-role">職種・コース</label>' +
-            '<input id="f-role" type="text" value="' + esc(d.role) + '" placeholder="例）総合職 / エンジニア"></div>' +
-          '<div class="field"><label for="f-label">見出しメモ（任意）</label>' +
-            '<input id="f-label" type="text" value="' + esc(d.label) + '" placeholder="例）3days仕事体験"></div>' +
-        '</div>' +
-
-        '<div class="field"><label>志望度</label><div class="radios">' +
-          [1, 2, 3].map(function (p) {
-            return '<label><input type="radio" name="pri" value="' + p + '"' +
-              (d.pri === p ? ' checked' : '') + '>' + '★'.repeat(p) + '</label>';
-          }).join('') + '</div></div>' +
-
-        '<div class="field"><label>選考ステップ（企業ごとに自由に変えられます）</label>' +
-          '<div class="steps-editor" id="f-steps"></div>' +
-          '<div class="hint">丸印を押すと、そこが現在地になります。テンプレを入れ直す：' +
-            '<button type="button" class="btn subtle sm" data-template="intern">インターン</button> ' +
-            '<button type="button" class="btn subtle sm" data-template="honsen">本選考</button></div></div>' +
-
-        '<div class="field"><label>結果</label><div class="radios">' +
+        '<div class="field"><label>いまの状況</label><div class="radios">' +
           M.RESULTS[d.kind].map(function (r) {
             return '<label><input type="radio" name="result" value="' + r + '"' +
-              (d.result === r ? ' checked' : '') + '>' + r + '</label>';
+              (d.result === r ? ' checked' : '') + '>' + (RESULT_LABEL[d.kind][r] || r) + '</label>';
           }).join('') + '</div></div>' +
 
-        '<div class="grid2">' +
-          '<div class="field"><label for="f-task">次にやること</label>' +
-            '<input id="f-task" type="text" value="' + esc(d.task) + '" placeholder="例）ES提出 / 二次面接"></div>' +
-          '<div class="field"><label for="f-due">期限</label>' +
-            '<input id="f-due" type="date" value="' + esc(d.due) + '"></div>' +
-        '</div>' +
-
-        '<div class="field"><label for="f-url">マイページ・応募先URL</label>' +
-          '<input id="f-url" type="url" value="' + esc(d.url) + '" placeholder="https://">' +
-          '<div class="hint">パスワードは書かないでください。データは暗号化されずに保存されます。</div></div>' +
-
-        '<div class="field"><label for="f-memo">メモ（ESの設問、面接で聞かれたこと など）</label>' +
-          '<textarea id="f-memo" placeholder="例）ガクチカ400字で提出済み／面接官2名・逆質問あり">' + esc(d.memo) + '</textarea></div>' +
-
-        (d.history.length
-          ? '<div class="history"><label style="font-size:12px;color:var(--muted)">記録</label><ul>' +
-              d.history.slice().reverse().map(function (h) {
-                return '<li><span class="d">' + esc(h.d) + '</span>' + esc(h.t) + '</li>';
-              }).join('') + '</ul></div>'
+        (esIndex >= 0
+          ? '<div class="field"><label class="checkline">' +
+              '<input id="f-es" type="checkbox"' + (d.cur >= esIndex ? ' checked' : '') + '>' +
+              '<span>ESを提出した</span></label></div>'
           : '') +
+
+        '<details class="more"' + (hasDetail ? ' open' : '') + '>' +
+          '<summary>詳しく入力する</summary>' +
+          '<div class="more-body">' +
+
+            '<div class="grid2">' +
+              '<div class="field"><label for="f-role">職種・コース</label>' +
+                '<input id="f-role" type="text" value="' + esc(d.role) + '" placeholder="例）総合職"></div>' +
+              '<div class="field"><label for="f-label">見出しメモ</label>' +
+                '<input id="f-label" type="text" value="' + esc(d.label) + '" placeholder="例）3days"></div>' +
+            '</div>' +
+
+            '<div class="field"><label>志望度</label><div class="radios">' +
+              [1, 2, 3].map(function (p) {
+                return '<label><input type="radio" name="pri" value="' + p + '"' +
+                  (d.pri === p ? ' checked' : '') + '>' + '★'.repeat(p) + '</label>';
+              }).join('') + '</div></div>' +
+
+            '<div class="grid2">' +
+              '<div class="field"><label for="f-task">次にやること</label>' +
+                '<input id="f-task" type="text" value="' + esc(d.task) + '" placeholder="例）二次面接"></div>' +
+              '<div class="field"><label for="f-due">期限</label>' +
+                '<input id="f-due" type="date" value="' + esc(d.due) + '"></div>' +
+            '</div>' +
+
+            '<div class="field"><label>選考ステップ</label>' +
+              '<div class="steps-editor" id="f-steps"></div>' +
+              '<div class="hint">丸印を押すと、そこが現在地になります。入れ直す：' +
+                '<button type="button" class="btn subtle sm" data-template="intern">インターン</button> ' +
+                '<button type="button" class="btn subtle sm" data-template="honsen">本選考</button></div></div>' +
+
+            '<div class="field"><label for="f-url">マイページ・応募先URL</label>' +
+              '<input id="f-url" type="url" value="' + esc(d.url) + '" placeholder="https://">' +
+              '<div class="hint">パスワードは書かないでください。</div></div>' +
+
+            '<div class="field"><label for="f-memo">メモ</label>' +
+              '<textarea id="f-memo" placeholder="ESの設問、面接で聞かれたこと など">' + esc(d.memo) + '</textarea></div>' +
+
+            (d.history.length
+              ? '<div class="history"><label style="font-size:12px;color:var(--muted)">記録</label><ul>' +
+                  d.history.slice().reverse().map(function (h) {
+                    return '<li><span class="d">' + esc(h.d) + '</span>' + esc(h.t) + '</li>';
+                  }).join('') + '</ul></div>'
+              : '') +
+
+          '</div>' +
+        '</details>' +
 
       '</div>' +
       '<div class="sheet-foot">' +
@@ -135,29 +166,50 @@
       '<button type="button" class="btn subtle sm" data-add-step="1" style="width:100%">＋ ステップを追加</button></div>';
   }
 
-  /** 画面の入力値を draft に取り込む */
+  /** 画面の入力値を draft に取り込む。詳細を開いていない場合、その項目は触らない。 */
   function collect() {
     if (!draft) return;
     var d = draft, sheet = $('#sheet');
-    var val = function (id) { var el = $(id); return el ? el.value : ''; };
+    var el = function (id) { return $(id); };
     var picked = function (name) { return sheet.querySelector('input[name=' + name + ']:checked'); };
 
-    d.company = val('#f-company').trim();
-    d.role = val('#f-role').trim();
-    d.label = val('#f-label').trim();
-    d.task = val('#f-task').trim();
-    d.due = val('#f-due');
-    d.url = val('#f-url').trim();
-    d.memo = val('#f-memo');
+    if (el('#f-company')) d.company = el('#f-company').value.trim();
 
-    var k = picked('kind'); if (k) d.kind = k.value;
-    var s = picked('season'); if (s) d.season = s.value;
-    var p = picked('pri'); if (p) d.pri = parseInt(p.value, 10);
+    var seg = picked('segment');
+    if (seg) {
+      var parts = seg.value.split(':');
+      d.kind = parts[0];
+      if (d.kind === 'intern') d.season = parts[1] || 'その他';
+    }
     var r = picked('result'); if (r) d.result = r.value;
+    var p = picked('pri'); if (p) d.pri = parseInt(p.value, 10);
 
-    Array.prototype.forEach.call($('#f-steps').querySelectorAll('input[data-step-index]'), function (inp) {
-      d.steps[parseInt(inp.dataset.stepIndex, 10)] = inp.value.trim() || '（無題）';
+    ['role', 'label', 'task', 'url'].forEach(function (key) {
+      var node = el('#f-' + key);
+      if (node) d[key] = node.value.trim();
     });
+    if (el('#f-due')) d.due = el('#f-due').value;
+    if (el('#f-memo')) d.memo = el('#f-memo').value;
+
+    var steps = el('#f-steps');
+    if (steps) {
+      Array.prototype.forEach.call(steps.querySelectorAll('input[data-step-index]'), function (inp) {
+        d.steps[parseInt(inp.dataset.stepIndex, 10)] = inp.value.trim() || '（無題）';
+      });
+    }
+
+    // ESのチェックは路線図の現在地と連動させる（情報の持ち場所を1つにするため）
+    var esBox = el('#f-es');
+    if (esBox) {
+      var idx = d.steps.indexOf('ES提出');
+      if (idx >= 0) {
+        if (esBox.checked && d.cur < idx) d.cur = idx;
+        if (!esBox.checked && d.cur >= idx) d.cur = Math.max(0, idx - 1);
+      }
+    }
+
+    // 「参加が決まった」「内定」を選んだら、路線図の現在地もそこへ動かす
+    M.syncStepToResult(d);
   }
 
   /* ---------- 保存 ---------- */
@@ -235,13 +287,23 @@
     return false;
   }
 
-  /** 種別を切り替えたらステップと結果を初期化する */
-  function handleKindChange() {
+  /** 区分を切り替えたときの処理。種別が変わったときだけステップを入れ直す。 */
+  function handleSegmentChange() {
+    if (!draft) return;
+    var before = draft.kind;
+    collect();
+    if (draft.kind !== before) {
+      draft.steps = M.TEMPLATES[draft.kind].slice();
+      draft.cur = 0;
+      draft.result = '進行中';
+    }
+    paintSheet();
+  }
+
+  /** 状況を選び直したとき、路線図の現在地も合わせる */
+  function handleResultChange() {
     if (!draft) return;
     collect();
-    draft.steps = M.TEMPLATES[draft.kind].slice();
-    draft.cur = 0;
-    draft.result = '進行中';
     paintSheet();
   }
 
@@ -367,6 +429,7 @@
     closeSheet: closeSheet,
     isOpen: isOpen,
     handleClick: handleClick,
-    handleKindChange: handleKindChange
+    handleSegmentChange: handleSegmentChange,
+    handleResultChange: handleResultChange
   };
 })(window);

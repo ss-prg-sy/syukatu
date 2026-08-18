@@ -116,7 +116,8 @@
 
   /* ---------- 種別ラジオの切り替え ---------- */
   document.addEventListener('change', function (ev) {
-    if (ev.target.name === 'kind') App.editor.handleKindChange();
+    if (ev.target.name === 'segment') App.editor.handleSegmentChange();
+    else if (ev.target.name === 'result') App.editor.handleResultChange();
   });
 
   /* ---------- モーダルを閉じる操作 ---------- */

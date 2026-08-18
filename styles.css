@@ -265,6 +265,25 @@ main{max-width:1080px;margin:0 auto;padding:18px 16px 90px}
 .step-row .x:hover{color:var(--stop)}
 .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
 
+/* 詳細の折りたたみ */
+.more{border-top:1px solid var(--line-soft);margin-top:4px}
+.more > summary{
+  cursor:pointer;list-style:none;padding:12px 2px 12px 20px;position:relative;
+  font-size:13px;color:var(--ai);font-weight:500;
+}
+.more > summary::-webkit-details-marker{display:none}
+.more > summary::before{
+  content:"▸";position:absolute;left:2px;top:12px;font-size:11px;transition:transform .15s;
+}
+.more[open] > summary::before{transform:rotate(90deg)}
+.more-body{padding-top:4px}
+
+.checkline{
+  display:flex !important;align-items:center;gap:8px;font-size:14px;color:var(--ink) !important;
+  letter-spacing:0 !important;margin-bottom:0 !important;cursor:pointer;
+}
+.checkline input{width:17px;height:17px;accent-color:var(--ai);margin:0}
+
 .history{border-top:1px solid var(--line-soft);margin-top:6px;padding-top:10px}
 .history ul{margin:0;padding:0;display:grid;gap:3px}
 .history li{font-size:12.5px;color:var(--muted);list-style:none}

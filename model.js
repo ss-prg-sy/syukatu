@@ -132,6 +132,18 @@
     if (hit) entry.result = hit;
   }
 
+  /** 結果からステップ位置へ反映する（「内定」を選んだら路線図も内定へ） */
+  function syncStepToResult(entry) {
+    var map = STEP_TO_RESULT[entry.kind] || {};
+    var stepName = null;
+    Object.keys(map).forEach(function (name) {
+      if (map[name] === entry.result) stepName = name;
+    });
+    if (!stepName) return;
+    var i = entry.steps.indexOf(stepName);
+    if (i >= 0) entry.cur = i;
+  }
+
   /* ---------- 端末間のマージ ----------
      PCとスマホの両方で編集された場合に備え、
      「エントリー単位で、更新時刻が新しい方を採用」する。
@@ -301,6 +313,7 @@
     markDeleted: markDeleted,
     blankEntry: blankEntry,
     syncResultToStep: syncResultToStep,
+    syncStepToResult: syncStepToResult,
     mergeInto: mergeInto,
     fingerprint: fingerprint,
     tally: tally,
