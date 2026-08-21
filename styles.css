@@ -38,6 +38,12 @@ button{cursor:pointer}
 :focus-visible{outline:2px solid var(--ai);outline-offset:2px}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
 
+/* 保存できない環境の警告 */
+.alert{
+  background:var(--stop);color:#fff;padding:12px 16px;font-size:13px;line-height:1.6;
+}
+.alert strong{display:block;font-size:14px;margin-bottom:2px}
+
 /* ---------- ヘッダーと集計 ---------- */
 .masthead{background:var(--ink);color:#fff;padding:18px 16px 0}
 .masthead-inner{max-width:1080px;margin:0 auto}
@@ -147,60 +153,28 @@ main{max-width:1080px;margin:0 auto;padding:18px 16px 90px}
 .chip.offer{color:#fff;border-color:var(--go);background:var(--go)}
 .co-head .caret{margin-left:auto;color:var(--muted);font-size:12px;transition:transform .18s}
 .co.open .caret{transform:rotate(180deg)}
-.co-body{display:none;padding:2px 14px 14px}
-.co.open .co-body{display:block}
+.co-body{padding:0 14px 12px}
 
-/* ---------- エントリー ---------- */
-.entry{padding:14px 0;border-bottom:1px dashed var(--line-soft)}
-.entry:last-of-type{border-bottom:0}
-.entry-top{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}
-.entry-title{font-size:14px;font-weight:500;flex:1;min-width:140px}
-.entry-title .role{color:var(--muted);font-weight:400;font-size:13px}
-.stars{color:#C9A227;font-size:12px;letter-spacing:1px}
-.result-badge{font-size:11.5px;padding:2px 8px;border-radius:99px;font-weight:500}
-.result-badge.offer{background:var(--go);color:#fff}
-.result-badge.join{background:#F0F4FC;color:var(--ai);border:1px solid #B9C9E6}
-.result-badge.out{background:var(--paper);color:var(--muted);border:1px solid var(--line)}
-
-/* ---------- 路線図（署名要素） ---------- */
-.rail{margin:12px 0 8px;overflow-x:auto;padding-bottom:2px}
-.rail-track{display:flex;align-items:flex-start;min-width:max-content;padding:0 2px}
-.stn{
-  display:flex;flex-direction:column;align-items:center;position:relative;
-  min-width:58px;flex:1;background:transparent;border:0;padding:0;
+/* ---------- エントリー行 ---------- */
+.co-head-static{
+  display:flex;align-items:center;gap:10px;padding:11px 14px 8px;
 }
-.stn .bar{height:3px;width:100%;background:var(--line);position:absolute;top:6px;left:-50%;z-index:0}
-.stn:first-child .bar{display:none}
-.stn .dot{
-  width:15px;height:15px;border-radius:50%;border:3px solid var(--line);
-  background:#fff;position:relative;z-index:1;
+.co-head-static .co-name{flex:1}
+.entry{display:flex;align-items:center;gap:8px;padding:7px 0;flex-wrap:wrap}
+.entry.ended{opacity:.55}
+.status-select{
+  border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;
+  font-size:13.5px;max-width:11.5em;
 }
-.stn .lbl{
-  font-size:10.5px;color:var(--muted);margin-top:6px;text-align:center;
-  line-height:1.35;max-width:66px;word-break:auto-phrase;
+.status-select:focus{border-color:var(--ai);outline:0}
+.status-select.offer{border-color:var(--go);color:var(--go);font-weight:700}
+.due-tag{
+  font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;color:#fff;
 }
-.stn.here .lbl{color:var(--ink);font-weight:700}
-
-/* インターン=藍 */
-.stn.passed .bar,.stn.here .bar{background:var(--ai)}
-.stn.passed .dot{border-color:var(--ai);background:var(--ai)}
-.stn.here .dot{border-color:var(--ai);background:#fff;box-shadow:0 0 0 4px rgba(43,76,140,.15)}
-/* 本選考=臙脂 */
-.entry.honsen .stn.passed .bar,.entry.honsen .stn.here .bar{background:var(--enji)}
-.entry.honsen .stn.passed .dot{border-color:var(--enji);background:var(--enji)}
-.entry.honsen .stn.here .dot{border-color:var(--enji);box-shadow:0 0 0 4px rgba(150,39,74,.13)}
-
-.entry.ended .rail{opacity:.45}
-
-.entry-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
-.next{font-size:12.5px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.next .tag{font-family:var(--mono);font-size:11px;font-weight:700;padding:1px 6px;border-radius:4px;color:#fff}
-.next .tag.stop{background:var(--stop)}
-.next .tag.caution{background:var(--caution)}
-.next .tag.go{background:var(--go)}
-.next .none{color:var(--muted)}
-.next .due{color:var(--muted)}
-.entry-actions{margin-left:auto;display:flex;gap:6px}
+.due-tag.stop{background:var(--stop)}
+.due-tag.caution{background:var(--caution)}
+.due-tag.go{background:var(--go)}
+.entry-edit{margin-left:auto;color:var(--muted)}
 
 /* ---------- 空状態 ---------- */
 .empty{

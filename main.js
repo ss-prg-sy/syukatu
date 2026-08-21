@@ -69,55 +69,29 @@
       return;
     }
 
-    // 企業カードの開閉
-    if (t.dataset.company !== undefined) {
-      var name = t.dataset.company;
-      M.ui.closed[name] = !M.ui.closed[name];
-      t.closest('.co').classList.toggle('open');
-      t.setAttribute('aria-expanded', String(!M.ui.closed[name]));
-      return;
-    }
-
     // 編集を開く
     if (t.dataset.edit) {
       var target = M.state.entries.find(function (x) { return x.id === t.dataset.edit; });
       if (target) App.editor.openEdit(target);
       return;
     }
+  });
 
-    // 1つ先へ進む
-    if (t.dataset.advance) {
-      var e = M.state.entries.find(function (x) { return x.id === t.dataset.advance; });
-      if (e && e.cur < e.steps.length - 1) {
-        e.cur += 1;
-        e.history.push({ d: M.todayISO(), t: e.steps[e.cur] + ' に進んだ' });
-        M.syncResultToStep(e);
-        M.touch(e);
-        saveAndRender();
-        App.view.toast(e.company + '：' + e.steps[e.cur]);
-      }
-      return;
-    }
-
-    // 路線図の駅を直接押して現在地を変える
-    if (t.dataset.jump) {
-      var parts = t.dataset.jump.split(':');
-      var entry = M.state.entries.find(function (x) { return x.id === parts[0]; });
-      if (entry) {
-        entry.cur = parseInt(parts[1], 10);
-        entry.history.push({ d: M.todayISO(), t: entry.steps[entry.cur] + ' に変更' });
-        M.syncResultToStep(entry);
-        M.touch(entry);
-        saveAndRender();
-      }
-      return;
-    }
+  /* ---------- 一覧の状況セレクト（モーダルを開かずに変更） ---------- */
+  document.addEventListener('change', function (ev) {
+    var sel = ev.target.closest('select[data-status]');
+    if (!sel) return;
+    var e = M.state.entries.find(function (x) { return x.id === sel.dataset.status; });
+    if (!e) return;
+    e.result = sel.value;
+    M.touch(e);
+    saveAndRender();
+    App.view.toast(e.company + '：' + M.resultLabel(e));
   });
 
   /* ---------- 種別ラジオの切り替え ---------- */
   document.addEventListener('change', function (ev) {
     if (ev.target.name === 'segment') App.editor.handleSegmentChange();
-    else if (ev.target.name === 'result') App.editor.handleResultChange();
   });
 
   /* ---------- モーダルを閉じる操作 ---------- */
@@ -157,10 +131,11 @@
   (async function init() {
     var saved = await App.store.read();
     if (saved && Array.isArray(saved.entries)) {
-      M.state.entries = saved.entries;
+      M.state.entries = saved.entries.map(M.normalize);  // 旧形式のステップ等を落とす
       M.state.deleted = saved.deleted || {};
     }
     $('#storageNote').textContent = App.store.label;
+    if (App.store.mode === 'memory') $('#storageAlert').hidden = false;
     App.view.render();          // まず手元のデータで描く（待たせない）
 
     App.sync.loadConfig();

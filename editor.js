@@ -33,38 +33,16 @@
     if (isNew && co && !co.value) co.focus();
   }
 
-  /* ---------- 表示用のやさしい言い回し ---------- */
-  var RESULT_LABEL = {
-    intern: { '進行中': '応募・選考中', '参加確定': '参加が決まった', '参加済み': '参加した', '不通過': '落ちた', '辞退': '辞退した' },
-    honsen: { '進行中': '選考中', '内定': '内定', '不通過': '落ちた', '辞退': '辞退した' }
-  };
-
-  /* 区分＝種別と時期をひとまとめにした選択肢 */
-  var SEGMENTS = [
-    { value: 'intern:夏', label: '夏インターン' },
-    { value: 'intern:秋冬', label: '秋冬インターン' },
-    { value: 'intern:春', label: '春インターン' },
-    { value: 'intern:その他', label: 'その他インターン' },
-    { value: 'honsen:', label: '本選考' }
-  ];
-
-  function currentSegment(d) {
-    return d.kind === 'honsen' ? 'honsen:' : 'intern:' + (d.season || 'その他');
-  }
-
   /* ---------- フォーム描画 ----------
-     上段は「企業名・区分・状況」の3つだけ。
-     これだけで画面上部の集計はすべて成立する。
-     細かい項目は「詳しく入力」を開いたときにだけ出す。 */
+     入力するのは「企業名・区分・状況」の3つだけ。
+     締切とメモは、必要な人だけが開けばよい。 */
   function paintSheet() {
     var d = draft;
     var names = [];
     M.state.entries.forEach(function (e) {
       if (names.indexOf(e.company) < 0) names.push(e.company);
     });
-
-    var esIndex = d.steps.indexOf('ES提出');
-    var hasDetail = !!(d.role || d.label || d.task || d.due || d.url || d.memo || d.pri !== 2);
+    var hasExtra = !!(d.due || d.memo);
 
     $('#sheet').innerHTML =
       '<div class="sheet-head">' +
@@ -80,67 +58,25 @@
           '</datalist></div>' +
 
         '<div class="field"><label>区分</label><div class="radios">' +
-          SEGMENTS.map(function (s) {
-            return '<label><input type="radio" name="segment" value="' + s.value + '"' +
-              (currentSegment(d) === s.value ? ' checked' : '') + '>' + s.label + '</label>';
+          M.SEGMENTS.map(function (seg) {
+            return '<label><input type="radio" name="segment" value="' + seg.value + '"' +
+              (M.segmentOf(d) === seg.value ? ' checked' : '') + '>' + seg.label + '</label>';
           }).join('') + '</div></div>' +
 
         '<div class="field"><label>いまの状況</label><div class="radios">' +
           M.RESULTS[d.kind].map(function (r) {
             return '<label><input type="radio" name="result" value="' + r + '"' +
-              (d.result === r ? ' checked' : '') + '>' + (RESULT_LABEL[d.kind][r] || r) + '</label>';
+              (d.result === r ? ' checked' : '') + '>' + (M.RESULT_LABEL[d.kind][r] || r) + '</label>';
           }).join('') + '</div></div>' +
 
-        (esIndex >= 0
-          ? '<div class="field"><label class="checkline">' +
-              '<input id="f-es" type="checkbox"' + (d.cur >= esIndex ? ' checked' : '') + '>' +
-              '<span>ESを提出した</span></label></div>'
-          : '') +
-
-        '<details class="more"' + (hasDetail ? ' open' : '') + '>' +
-          '<summary>詳しく入力する</summary>' +
+        '<details class="more"' + (hasExtra ? ' open' : '') + '>' +
+          '<summary>締切とメモ（任意）</summary>' +
           '<div class="more-body">' +
-
-            '<div class="grid2">' +
-              '<div class="field"><label for="f-role">職種・コース</label>' +
-                '<input id="f-role" type="text" value="' + esc(d.role) + '" placeholder="例）総合職"></div>' +
-              '<div class="field"><label for="f-label">見出しメモ</label>' +
-                '<input id="f-label" type="text" value="' + esc(d.label) + '" placeholder="例）3days"></div>' +
-            '</div>' +
-
-            '<div class="field"><label>志望度</label><div class="radios">' +
-              [1, 2, 3].map(function (p) {
-                return '<label><input type="radio" name="pri" value="' + p + '"' +
-                  (d.pri === p ? ' checked' : '') + '>' + '★'.repeat(p) + '</label>';
-              }).join('') + '</div></div>' +
-
-            '<div class="grid2">' +
-              '<div class="field"><label for="f-task">次にやること</label>' +
-                '<input id="f-task" type="text" value="' + esc(d.task) + '" placeholder="例）二次面接"></div>' +
-              '<div class="field"><label for="f-due">期限</label>' +
-                '<input id="f-due" type="date" value="' + esc(d.due) + '"></div>' +
-            '</div>' +
-
-            '<div class="field"><label>選考ステップ</label>' +
-              '<div class="steps-editor" id="f-steps"></div>' +
-              '<div class="hint">丸印を押すと、そこが現在地になります。入れ直す：' +
-                '<button type="button" class="btn subtle sm" data-template="intern">インターン</button> ' +
-                '<button type="button" class="btn subtle sm" data-template="honsen">本選考</button></div></div>' +
-
-            '<div class="field"><label for="f-url">マイページ・応募先URL</label>' +
-              '<input id="f-url" type="url" value="' + esc(d.url) + '" placeholder="https://">' +
-              '<div class="hint">パスワードは書かないでください。</div></div>' +
-
+            '<div class="field"><label for="f-due">締切</label>' +
+              '<input id="f-due" type="date" value="' + esc(d.due) + '">' +
+              '<div class="hint">入れると7日前から上に出ます。不要なら空のままで構いません。</div></div>' +
             '<div class="field"><label for="f-memo">メモ</label>' +
-              '<textarea id="f-memo" placeholder="ESの設問、面接で聞かれたこと など">' + esc(d.memo) + '</textarea></div>' +
-
-            (d.history.length
-              ? '<div class="history"><label style="font-size:12px;color:var(--muted)">記録</label><ul>' +
-                  d.history.slice().reverse().map(function (h) {
-                    return '<li><span class="d">' + esc(h.d) + '</span>' + esc(h.t) + '</li>';
-                  }).join('') + '</ul></div>'
-              : '') +
-
+              '<textarea id="f-memo" placeholder="自由に">' + esc(d.memo) + '</textarea></div>' +
           '</div>' +
         '</details>' +
 
@@ -149,31 +85,15 @@
         (isNew ? '' : '<button type="button" class="btn danger sm" data-delete="1">削除</button>') +
         '<button type="button" class="btn" data-save="1">保存する</button>' +
       '</div>';
-
-    paintSteps();
   }
 
-  function paintSteps() {
-    $('#f-steps').innerHTML = draft.steps.map(function (s, i) {
-      return '<div class="step-row">' +
-        '<button type="button" class="mark" data-set-current="' + i + '" title="現在地にする">' +
-          (i === draft.cur ? '●' : '○') + '</button>' +
-        '<input type="text" value="' + esc(s) + '" data-step-index="' + i + '">' +
-        '<button type="button" class="x" data-remove-step="' + i + '" title="削除">×</button>' +
-      '</div>';
-    }).join('') +
-    '<div class="step-row"><span class="mark"></span>' +
-      '<button type="button" class="btn subtle sm" data-add-step="1" style="width:100%">＋ ステップを追加</button></div>';
-  }
-
-  /** 画面の入力値を draft に取り込む。詳細を開いていない場合、その項目は触らない。 */
+  /** 画面の入力値を draft に取り込む */
   function collect() {
     if (!draft) return;
     var d = draft, sheet = $('#sheet');
-    var el = function (id) { return $(id); };
     var picked = function (name) { return sheet.querySelector('input[name=' + name + ']:checked'); };
 
-    if (el('#f-company')) d.company = el('#f-company').value.trim();
+    if ($('#f-company')) d.company = $('#f-company').value.trim();
 
     var seg = picked('segment');
     if (seg) {
@@ -182,34 +102,16 @@
       if (d.kind === 'intern') d.season = parts[1] || 'その他';
     }
     var r = picked('result'); if (r) d.result = r.value;
-    var p = picked('pri'); if (p) d.pri = parseInt(p.value, 10);
+    if ($('#f-due')) d.due = $('#f-due').value;
+    if ($('#f-memo')) d.memo = $('#f-memo').value;
+  }
 
-    ['role', 'label', 'task', 'url'].forEach(function (key) {
-      var node = el('#f-' + key);
-      if (node) d[key] = node.value.trim();
-    });
-    if (el('#f-due')) d.due = el('#f-due').value;
-    if (el('#f-memo')) d.memo = el('#f-memo').value;
-
-    var steps = el('#f-steps');
-    if (steps) {
-      Array.prototype.forEach.call(steps.querySelectorAll('input[data-step-index]'), function (inp) {
-        d.steps[parseInt(inp.dataset.stepIndex, 10)] = inp.value.trim() || '（無題）';
-      });
-    }
-
-    // ESのチェックは路線図の現在地と連動させる（情報の持ち場所を1つにするため）
-    var esBox = el('#f-es');
-    if (esBox) {
-      var idx = d.steps.indexOf('ES提出');
-      if (idx >= 0) {
-        if (esBox.checked && d.cur < idx) d.cur = idx;
-        if (!esBox.checked && d.cur >= idx) d.cur = Math.max(0, idx - 1);
-      }
-    }
-
-    // 「参加が決まった」「内定」を選んだら、路線図の現在地もそこへ動かす
-    M.syncStepToResult(d);
+  /** 区分を変えたとき、その種別に無い状況が選ばれていたら戻す */
+  function handleSegmentChange() {
+    if (!draft) return;
+    collect();
+    if (M.RESULTS[draft.kind].indexOf(draft.result) < 0) draft.result = '進行中';
+    paintSheet();
   }
 
   /* ---------- 保存 ---------- */
@@ -222,20 +124,11 @@
     }
     var next = JSON.parse(JSON.stringify(draft));
     next.updated = M.nowISO();   // 端末間マージで新旧を判定するために必要
-    var stamp = M.todayISO();
     var i = M.state.entries.findIndex(function (x) { return x.id === next.id; });
 
     if (i < 0) {
-      next.history = [{ d: stamp, t: '登録' }];
       M.state.entries.push(next);
     } else {
-      var prev = M.state.entries[i];
-      if (prev.steps[prev.cur] !== next.steps[next.cur]) {
-        next.history.push({ d: stamp, t: next.steps[next.cur] + ' に更新' });
-      }
-      if (prev.result !== next.result) {
-        next.history.push({ d: stamp, t: '結果：' + next.result });
-      }
       M.state.entries[i] = next;
     }
     closeSheet();
@@ -256,55 +149,7 @@
     if (target.dataset.close) { closeSheet(); return true; }
     if (target.dataset.save) { commit(onSaved); return true; }
     if (target.dataset.delete) { remove(onSaved); return true; }
-
-    if (target.dataset.template) {
-      collect();
-      draft.steps = M.TEMPLATES[target.dataset.template].slice();
-      draft.cur = Math.min(draft.cur, draft.steps.length - 1);
-      paintSteps();
-      return true;
-    }
-    if (target.dataset.addStep) {
-      collect();
-      draft.steps.push('新しいステップ');
-      paintSteps();
-      return true;
-    }
-    if (target.dataset.removeStep !== undefined) {
-      collect();
-      if (draft.steps.length <= 1) { App.view.toast('ステップは1つ以上必要です'); return true; }
-      draft.steps.splice(parseInt(target.dataset.removeStep, 10), 1);
-      draft.cur = Math.min(draft.cur, draft.steps.length - 1);
-      paintSteps();
-      return true;
-    }
-    if (target.dataset.setCurrent !== undefined) {
-      collect();
-      draft.cur = parseInt(target.dataset.setCurrent, 10);
-      paintSteps();
-      return true;
-    }
     return false;
-  }
-
-  /** 区分を切り替えたときの処理。種別が変わったときだけステップを入れ直す。 */
-  function handleSegmentChange() {
-    if (!draft) return;
-    var before = draft.kind;
-    collect();
-    if (draft.kind !== before) {
-      draft.steps = M.TEMPLATES[draft.kind].slice();
-      draft.cur = 0;
-      draft.result = '進行中';
-    }
-    paintSheet();
-  }
-
-  /** 状況を選び直したとき、路線図の現在地も合わせる */
-  function handleResultChange() {
-    if (!draft) return;
-    collect();
-    paintSheet();
   }
 
   /* ---------- バックアップ画面 ---------- */
@@ -429,7 +274,6 @@
     closeSheet: closeSheet,
     isOpen: isOpen,
     handleClick: handleClick,
-    handleSegmentChange: handleSegmentChange,
-    handleResultChange: handleResultChange
+    handleSegmentChange: handleSegmentChange
   };
 })(window);
