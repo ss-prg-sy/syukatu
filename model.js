@@ -108,7 +108,6 @@
       kind: 'intern',
       season: '夏',
       result: '進行中',
-      due: '',
       memo: '',
       created: todayISO(),
       updated: nowISO()
@@ -121,7 +120,7 @@
     if (!entry.kind) entry.kind = 'intern';
     if (entry.kind === 'intern' && !entry.season) entry.season = 'その他';
     if (!entry.updated) entry.updated = entry.created ? entry.created + 'T00:00:00.000Z' : nowISO();
-    ['steps', 'cur', 'pri', 'role', 'label', 'task', 'url', 'history'].forEach(function (k) {
+    ['steps', 'cur', 'pri', 'role', 'label', 'task', 'url', 'history', 'due'].forEach(function (k) {
       delete entry[k];
     });
     return entry;
@@ -209,20 +208,14 @@
       var key = e.company.trim();
       (map[key] = map[key] || []).push(e);
     });
-    var soonest = function (arr) {
-      return Math.min.apply(null, arr.map(function (e) {
-        var d = daysUntil(e.due);
-        return (d === null || isEnded(e)) ? 9999 : d;
-      }));
-    };
     return Object.keys(map).map(function (name) {
       var entries = map[name].slice().sort(function (a, b) {
         if (a.kind !== b.kind) return a.kind === 'honsen' ? -1 : 1;
         return (a.created || '').localeCompare(b.created || '');
       });
-      return { name: name, entries: entries, soonest: soonest(entries) };
+      return { name: name, entries: entries };
     }).sort(function (a, b) {
-      return a.soonest - b.soonest || a.name.localeCompare(b.name, 'ja');
+      return a.name.localeCompare(b.name, 'ja');   // 名前順。並びが動かない方が探しやすい
     });
   }
 
@@ -235,8 +228,8 @@
     };
     return [
       mk({ company: 'みなと商事', kind: 'intern', season: '夏', result: '参加済み' }),
-      mk({ company: 'みなと商事', kind: 'honsen', result: '進行中', due: todayISO(2) }),
-      mk({ company: 'あおば製作所', kind: 'intern', season: '春', result: '進行中', due: todayISO(0) }),
+      mk({ company: 'みなと商事', kind: 'honsen', result: '進行中' }),
+      mk({ company: 'あおば製作所', kind: 'intern', season: '春', result: '進行中' }),
       mk({ company: 'あおば製作所', kind: 'intern', season: '秋冬', result: '参加済み' }),
       mk({ company: 'つばさ情報システム', kind: 'honsen', result: '内定' }),
       mk({ company: 'しおかぜ食品', kind: 'honsen', result: '不通過' }),

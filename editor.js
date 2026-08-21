@@ -42,7 +42,6 @@
     M.state.entries.forEach(function (e) {
       if (names.indexOf(e.company) < 0) names.push(e.company);
     });
-    var hasExtra = !!(d.due || d.memo);
 
     $('#sheet').innerHTML =
       '<div class="sheet-head">' +
@@ -69,16 +68,8 @@
               (d.result === r ? ' checked' : '') + '>' + (M.RESULT_LABEL[d.kind][r] || r) + '</label>';
           }).join('') + '</div></div>' +
 
-        '<details class="more"' + (hasExtra ? ' open' : '') + '>' +
-          '<summary>締切とメモ（任意）</summary>' +
-          '<div class="more-body">' +
-            '<div class="field"><label for="f-due">締切</label>' +
-              '<input id="f-due" type="date" value="' + esc(d.due) + '">' +
-              '<div class="hint">入れると7日前から上に出ます。不要なら空のままで構いません。</div></div>' +
-            '<div class="field"><label for="f-memo">メモ</label>' +
-              '<textarea id="f-memo" placeholder="自由に">' + esc(d.memo) + '</textarea></div>' +
-          '</div>' +
-        '</details>' +
+        '<div class="field"><label for="f-memo">メモ（任意）</label>' +
+          '<textarea id="f-memo" placeholder="自由に。選考の感触、面接の日程、聞かれたこと など">' + esc(d.memo) + '</textarea></div>' +
 
       '</div>' +
       '<div class="sheet-foot">' +
@@ -102,7 +93,6 @@
       if (d.kind === 'intern') d.season = parts[1] || 'その他';
     }
     var r = picked('result'); if (r) d.result = r.value;
-    if ($('#f-due')) d.due = $('#f-due').value;
     if ($('#f-memo')) d.memo = $('#f-memo').value;
   }
 

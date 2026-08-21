@@ -44,31 +44,9 @@
       '</div>';
   }
 
-  /* ---------- 締切（入れた人だけ出る） ---------- */
-  function renderDeadlines() {
-    var rows = M.state.entries
-      .filter(function (e) { return e.due && !M.isEnded(e); })
-      .map(function (e) { return { e: e, days: M.daysUntil(e.due) }; })
-      .filter(function (x) { return x.days !== null && x.days <= 7; })
-      .sort(function (a, b) { return a.days - b.days; });
-
-    $('#dlSec').hidden = rows.length === 0;
-    $('#dlCount').textContent = rows.length ? rows.length + '件' : '';
-    $('#deadlines').innerHTML = rows.map(function (x) {
-      var e = x.e;
-      return '<button type="button" class="dl ' + M.signalOf(x.days) + '" data-edit="' + e.id + '">' +
-        '<span class="dl-when">' + M.whenText(x.days) + '</span>' +
-        '<span class="dl-body">' +
-          '<span class="dl-task">' + esc(e.company) + '</span>' +
-          '<span class="dl-meta">' + esc(M.kindLabel(e)) + ' ・ <span class="num">' + esc(e.due) + '</span></span>' +
-        '</span></button>';
-    }).join('');
-  }
-
   /* ---------- エントリー1件 ----------
      状況はその場で変えられるように select にしている。 */
   function entryHTML(entry) {
-    var days = M.daysUntil(entry.due);
     var ended = M.isEnded(entry);
 
     var options = M.RESULTS[entry.kind].map(function (r) {
@@ -76,15 +54,14 @@
         esc(M.RESULT_LABEL[entry.kind][r] || r) + '</option>';
     }).join('');
 
-    var due = (!ended && entry.due && days !== null)
-      ? '<span class="due-tag ' + M.signalOf(days) + '">' + M.whenText(days) + '</span>' : '';
-
-    return '<div class="entry ' + entry.kind + (ended ? ' ended' : '') + '">' +
-      '<span class="chip ' + (ended ? 'done' : entry.kind) + '">' + esc(M.kindLabel(entry)) + '</span>' +
-      '<select class="status-select ' + (entry.result === '内定' ? 'offer' : '') + '" data-status="' + entry.id + '"' +
-        ' aria-label="状況">' + options + '</select>' +
-      due +
-      '<button type="button" class="btn subtle sm entry-edit" data-edit="' + entry.id + '">…</button>' +
+    return '<div class="entry-wrap' + (ended ? ' ended' : '') + '">' +
+      '<div class="entry">' +
+        '<span class="chip ' + (ended ? 'done' : entry.kind) + '">' + esc(M.kindLabel(entry)) + '</span>' +
+        '<select class="status-select ' + (entry.result === '内定' ? 'offer' : '') + '" data-status="' + entry.id + '"' +
+          ' aria-label="状況">' + options + '</select>' +
+        '<button type="button" class="btn subtle sm entry-edit" data-edit="' + entry.id + '">…</button>' +
+      '</div>' +
+      (entry.memo ? '<p class="entry-memo">' + esc(entry.memo) + '</p>' : '') +
     '</div>';
   }
 
@@ -119,7 +96,6 @@
 
   function render() {
     renderTally();
-    renderDeadlines();
     renderCompanies();
   }
 

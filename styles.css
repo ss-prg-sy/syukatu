@@ -114,25 +114,6 @@ main{max-width:1080px;margin:0 auto;padding:18px 16px 90px}
 .footer-actions{margin-top:26px;display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
 .storage-note{font-size:11.5px;color:var(--muted)}
 
-/* ---------- 締切 ---------- */
-.deadlines{display:grid;gap:8px}
-.dl{
-  display:flex;align-items:center;gap:10px;background:var(--surface);
-  border:1px solid var(--line);border-left-width:4px;border-radius:var(--radius);
-  padding:10px 12px;width:100%;text-align:left;
-}
-.dl:hover{border-color:var(--muted)}
-.dl.stop{border-left-color:var(--stop)}
-.dl.caution{border-left-color:var(--caution)}
-.dl.go{border-left-color:var(--go)}
-.dl-when{font-family:var(--mono);font-size:12px;font-weight:700;min-width:74px}
-.dl.stop .dl-when{color:var(--stop)}
-.dl.caution .dl-when{color:var(--caution)}
-.dl.go .dl-when{color:var(--go)}
-.dl-body{flex:1;min-width:0}
-.dl-task{display:block;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dl-meta{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
 /* ---------- 企業カード ---------- */
 .companies{display:grid;gap:12px}
 .co{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
@@ -160,20 +141,19 @@ main{max-width:1080px;margin:0 auto;padding:18px 16px 90px}
   display:flex;align-items:center;gap:10px;padding:11px 14px 8px;
 }
 .co-head-static .co-name{flex:1}
-.entry{display:flex;align-items:center;gap:8px;padding:7px 0;flex-wrap:wrap}
-.entry.ended{opacity:.55}
+.entry-wrap{padding:7px 0}
+.entry-wrap.ended{opacity:.55}
+.entry{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.entry-memo{
+  margin:5px 0 0;font-size:12.5px;color:var(--muted);line-height:1.6;
+  white-space:pre-wrap;word-break:break-word;
+}
 .status-select{
   border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;
   font-size:13.5px;max-width:11.5em;
 }
 .status-select:focus{border-color:var(--ai);outline:0}
 .status-select.offer{border-color:var(--go);color:var(--go);font-weight:700}
-.due-tag{
-  font-family:var(--mono);font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;color:#fff;
-}
-.due-tag.stop{background:var(--stop)}
-.due-tag.caution{background:var(--caution)}
-.due-tag.go{background:var(--go)}
 .entry-edit{margin-left:auto;color:var(--muted)}
 
 /* ---------- 空状態 ---------- */
@@ -238,19 +218,6 @@ main{max-width:1080px;margin:0 auto;padding:18px 16px 90px}
 .step-row .x{border:0;background:transparent;color:var(--muted);padding:2px 6px;font-size:15px;line-height:1}
 .step-row .x:hover{color:var(--stop)}
 .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
-
-/* 詳細の折りたたみ */
-.more{border-top:1px solid var(--line-soft);margin-top:4px}
-.more > summary{
-  cursor:pointer;list-style:none;padding:12px 2px 12px 20px;position:relative;
-  font-size:13px;color:var(--ai);font-weight:500;
-}
-.more > summary::-webkit-details-marker{display:none}
-.more > summary::before{
-  content:"▸";position:absolute;left:2px;top:12px;font-size:11px;transition:transform .15s;
-}
-.more[open] > summary::before{transform:rotate(90deg)}
-.more-body{padding-top:4px}
 
 .checkline{
   display:flex !important;align-items:center;gap:8px;font-size:14px;color:var(--ink) !important;
